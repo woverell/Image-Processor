@@ -175,13 +175,21 @@ class ImageData extends Component
       
       //create data[] array.
       data = new int[rows*cols];
-      
+      int t;
       //Copy data from ID.
       for(int i=0; i<rows; i++)
       for(int j=0; j<cols; j++)
-        {   data[i*cols+j] = ID.data[(rStart+i)*ID.cols + j + cStart];
-            minDataRange = Math.min(minDataRange, data[i*cols+j]);
-            maxDataRange = Math.max(maxDataRange, data[i*cols+j]);
+        {   
+    	  if(ID.greyscale == 1) // if color
+    	  {
+    		  data[i*cols+j] = ID.data[(rStart+i)*ID.cols + j + cStart];
+    	  }else // if greyscale
+    	  {
+    		  t = ID.data[(rStart+i)*ID.cols + j + cStart];
+    		  data[i*cols+j] = (255 << 24) | (t << 16) | (t << 8) | t;
+    	  }
+            //minDataRange = Math.min(minDataRange, data[i*cols+j]);
+            //maxDataRange = Math.max(maxDataRange, data[i*cols+j]);
         }    
       
       
@@ -228,23 +236,38 @@ class ImageData extends Component
    
   	// convert the image data to greyscale
   	// used in edge detect and contrast stretch
-  	private void toGreyScale()
+  	public void toGreyScale()
   	{
-  		int pixel, r, g, b;
-  		
-  		for(int row=0; row<rows; row++)
-  	    for(int c=0; c<cols; c++)
-  	    {   
-  	    	pixel = data[row*cols + c];
-  		    r   = (pixel >> 16) & 0xff;
-  	        g = (pixel >>  8) & 0xff;
-  	        b  = (pixel      ) & 0xff;
-  	        
-  	        data[row*cols+c] = (int)((r+g+b)/3);  
-  	        minDataRange = Math.min(minDataRange, data[row*cols+c]);
-  	        maxDataRange = Math.max(maxDataRange, data[row*cols+c]);
-  	     }
-  		greyscale = 0;
+  		if(greyscale == 1) // if image is color
+  		{
+  			int pixel, r, g, b;
+  			
+  			// loop through every pixel and split into rgb components
+  			// then just average the intensities: (r+g+b)/3
+  			for(int row=0; row<rows; row++)
+  				for(int c=0; c<cols; c++)
+  				{   
+  					pixel = data[row*cols + c];
+  					r   = (pixel >> 16) & 0xff;
+  					g = (pixel >>  8) & 0xff;
+  					b  = (pixel      ) & 0xff;
+
+  					data[row*cols+c] = (int)((r+g+b)/3);  
+  					minDataRange = Math.min(minDataRange, data[row*cols+c]);
+  					maxDataRange = Math.max(maxDataRange, data[row*cols+c]);
+  				}
+  			greyscale = 0;
+  		}
+  	}
+  	
+  	public int getMinValue()
+  	{
+  		return (int)minDataRange;
+  	}
+  	
+  	public int getMaxValue()
+  	{
+  		return (int)maxDataRange;
   	}
    
    /**
@@ -418,9 +441,6 @@ class ImageData extends Component
 			// And set as new pixel value
 			data[row*cols + c] = (int)Math.sqrt((dxvalue*dxvalue)+(dyvalue+dyvalue));
 		}
-		
-		// Now perform threshold operation
-		thresholdImage(80);
 	}
 	
 	// Returns the contrast of the image as a percent
@@ -433,16 +453,29 @@ class ImageData extends Component
 	
 	// Stretch the contrast of the image by
 	// percent: percentToIncrease
-	public void contrastStretch(int percentToIncrease)
+	public void contrastStretch(int newMin, int newMax)
 	{
 		// First convert the image to greyscale
+		// which also sets the max and min intensities
+		// minDataRange maxDataRange
 		if(greyscale == 1)
 		{
 			toGreyScale();
 		}
 		
-		// Stretch the contrast by percentToIncrease
+		// Stretch the contrast to newMin, newMax
+		// First calculate the multiplier( newMax-newMin / max-min )
+		// Then subtract min from each pixel, multiply by this value
+		// and add newMin to this value
+		float multiplier = (newMax - newMin)/(maxDataRange-minDataRange);
 		
+		for(int row=1;row<rows - 1; row++)
+		for(int c=1;c<cols - 1; c++)
+		{
+			data[row*cols + c] = (int)((data[row*cols + c] - minDataRange)*multiplier+newMin);
+		}
+		maxDataRange = newMax;
+		minDataRange = newMin;
 		
 	}
      

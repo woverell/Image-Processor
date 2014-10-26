@@ -143,7 +143,7 @@ public class ImageFrame extends Frame
 	 */
 	public void undoProcess()
 	{
-		ActiveImage = BackupImage;  // set the ActiveImage to the previous state
+		ActiveImage = new ImageData(BackupImage.rows,BackupImage.cols, BackupImage, 0,0);  // set the ActiveImage to the previous state
 		
 		// update the display
 		img = ActiveImage.createImage();
@@ -441,7 +441,7 @@ public class ImageFrame extends Frame
 	void threshold_ActionPerformed(java.awt.event.ActionEvent event)
 	{
 		System.out.println("threshold performing!");
-		BackupImage = ActiveImage; // set the BackupImage
+		BackupImage = new ImageData(ActiveImage.rows,ActiveImage.cols, ActiveImage, 0,0); // set the BackupImage
 		undo.setEnabled(true); // enable the undo button
 		
 		// prompt for the threshold value
@@ -472,7 +472,7 @@ public class ImageFrame extends Frame
 	void negative_ActionPerformed(java.awt.event.ActionEvent event)
 	{
 		System.out.println("negative performing!");
-		BackupImage = ActiveImage; // set the BackupImage
+		BackupImage = new ImageData(ActiveImage.rows,ActiveImage.cols, ActiveImage, 0,0); // set the BackupImage
 		undo.setEnabled(true); // enable the undo button
 		
 		// perform the negate operation
@@ -487,7 +487,7 @@ public class ImageFrame extends Frame
 	void edgeDetect_ActionPerformed(java.awt.event.ActionEvent event)
 	{
 		System.out.println("edgedetect performing!");
-		BackupImage = ActiveImage; // set the BackupImage
+		BackupImage = new ImageData(ActiveImage.rows,ActiveImage.cols, ActiveImage, 0,0); // set the BackupImage
 		undo.setEnabled(true); // enable the undo button
 		
 		// perform the edge detect operation
@@ -502,11 +502,53 @@ public class ImageFrame extends Frame
 	void contrastStretch_ActionPerformed(java.awt.event.ActionEvent event)
 	{
 		System.out.println("contrast stretch performing!");
-		BackupImage = ActiveImage; // set the BackupImage
+		BackupImage = new ImageData(ActiveImage.rows,ActiveImage.cols, ActiveImage, 0,0); // set the BackupImage
 		undo.setEnabled(true); // enable the undo button
 		
+		// Set image as greyscale if it is not already
+		ActiveImage.toGreyScale();
+		
+		// Display the current min and max 
+		// intensities for the image
+		int min,max;
+		min = ActiveImage.getMinValue();
+		max = ActiveImage.getMaxValue();
+		JOptionPane.showMessageDialog(this, "Current Intensity Range: " + min + " - " + max);
+		
+		// prompt for the new min value
+		int newmin;
+		do{
+			String diaInput = JOptionPane.showInputDialog(
+					this,
+					"Please enter new min value(0-255)\n",
+					"Customized Dialog",
+					JOptionPane.PLAIN_MESSAGE);
+			try{
+				newmin = Integer.parseInt(diaInput);
+			}catch(NumberFormatException e)
+			{
+				newmin = -1; // will fail the while and re-prompt user
+			}
+		}while(!(0 <= newmin && newmin <= 255));
+
+		// prompt for the new max value
+		int newmax;
+		do{
+			String diaInput = JOptionPane.showInputDialog(
+					this,
+					"Please enter new max value(0-255)\n",
+					"Customized Dialog",
+					JOptionPane.PLAIN_MESSAGE);
+			try{
+				newmax = Integer.parseInt(diaInput);
+			}catch(NumberFormatException e)
+			{
+				newmax = -1; // will fail the while and re-prompt user
+			}
+		}while(!(0 <= newmax && newmax <= 255));
+		
 		// perform the contrast stretch operation
-		ActiveImage.contrastStretch(10);
+		ActiveImage.contrastStretch(newmin, newmax);
 		
 		// update the display
 		img = ActiveImage.createImage();
