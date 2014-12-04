@@ -425,21 +425,21 @@ class ImageData extends Component
 		for(int c=1;c<cols - 1; c++)
 		{
 			// Calculate the convolutions for x and y directions
-			dxvalue = Hx[0] * datacopy[(row - 1) * cols + c - 1] + Hx[1] * datacopy[(row - 1) * cols + c] + 
-					Hx[2] * datacopy[(row - 1) * cols + c + 1] + Hx[3] * datacopy[(row) * cols + c - 1] + 
-					Hx[4] * datacopy[(row) * cols + c] + Hx[5] * datacopy[(row) * cols + c + 1] + 
-					Hx[6] * datacopy[(row + 1) * cols + c - 1] + Hx[7] * datacopy[(row + 1) * cols + c] + 
-					Hx[8] * datacopy[(row + 1) * cols + c + 1];
+			dxvalue = Hx[0] * data[(row - 1) * cols + c - 1] + Hx[1] * data[(row - 1) * cols + c] + 
+					Hx[2] * data[(row - 1) * cols + c + 1] + Hx[3] * data[(row) * cols + c - 1] + 
+					Hx[4] * data[(row) * cols + c] + Hx[5] * data[(row) * cols + c + 1] + 
+					Hx[6] * data[(row + 1) * cols + c - 1] + Hx[7] * data[(row + 1) * cols + c] + 
+					Hx[8] * data[(row + 1) * cols + c + 1];
 
-			dyvalue = Hy[0] * datacopy[(row - 1) * cols + c - 1] + Hy[1] * datacopy[(row - 1) * cols + c] + 
-					Hy[2] * datacopy[(row - 1) * cols + c + 1] + Hy[3] * datacopy[(row) * cols + c - 1] + 
-					Hy[4] * datacopy[(row) * cols + c] + Hy[5] * datacopy[(row) * cols + c + 1] + 
-					Hy[6] * datacopy[(row + 1) * cols + c - 1] + Hy[7] * datacopy[(row + 1) * cols + c] + 
-					Hy[8] * datacopy[(row + 1) * cols + c + 1];
+			dyvalue = Hy[0] * data[(row - 1) * cols + c - 1] + Hy[1] * data[(row - 1) * cols + c] + 
+					Hy[2] * data[(row - 1) * cols + c + 1] + Hy[3] * data[(row) * cols + c - 1] + 
+					Hy[4] * data[(row) * cols + c] + Hy[5] * data[(row) * cols + c + 1] + 
+					Hy[6] * data[(row + 1) * cols + c - 1] + Hy[7] * data[(row + 1) * cols + c] + 
+					Hy[8] * data[(row + 1) * cols + c + 1];
 			
 			// Then take square root of the sum of the squares
 			// And set as new pixel value
-			data[row*cols + c] = (int)Math.sqrt((dxvalue*dxvalue)+(dyvalue+dyvalue));
+			data[row*cols + c] = (int)Math.sqrt((dxvalue*dxvalue)+(dyvalue*dyvalue));
 		}
 	}
 	
